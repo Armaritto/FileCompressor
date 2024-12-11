@@ -59,21 +59,29 @@ public class Compressor {
         dict = huffman.encode(freq);
     }
     private void writeHeader(BufferedOutputStream bufferedOutputStream, int n) throws IOException {
-        bufferedwriting("n", String.valueOf(n), bufferedOutputStream);
-        bufferedwriting("size", String.valueOf(dict.size()), bufferedOutputStream);
+        bufferedWriting("n", String.valueOf(n), bufferedOutputStream);
+        bufferedWriting("size", String.valueOf(dict.size()), bufferedOutputStream);
         for(String key: freq.keySet())
-            bufferedwriting(key, dict.get(key), bufferedOutputStream);
+            bufferedWriting(key, dict.get(key), bufferedOutputStream);
     }
     private void writeContent(BufferedOutputStream bufferedOutputStream, String oldPath, int n) throws IOException {
         try (BufferedInputStream bufferedInputStream
                      = new BufferedInputStream(new FileInputStream (oldPath))) {
             byte[] buffer = new byte[n];
             int bytesRead;
+            StringBuilder bitString = new StringBuilder();
             while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
-                if (bytesRead<n)
+                if (bytesRead < n)
                     buffer = Arrays.copyOf(buffer, bytesRead);
                 String key = new String(buffer);
-                bufferedOutputStream.write(dict.get(key).getBytes());
+                String encodedValue = dict.get(key);
+                bitString.append(encodedValue);
+                while (bitString.length() >= 8) {
+                    String byteString = bitString.substring(0, 8);
+                    byte b = (byte) Integer.parseInt(byteString, 2);
+                    bufferedOutputStream.write(b);
+                    bitString.delete(0, 8);
+                }
             }
         }
         catch (IOException e) {
@@ -90,10 +98,20 @@ public class Compressor {
         String newFilename = "21010229." + n + "." + fileName + extension + ".hc";
         return dirPath + newFilename;
     }
-    private static void bufferedwriting(String key, String value, BufferedOutputStream bufferedOutputStream) throws IOException {
+    private static void bufferedWriting(String key, String value, BufferedOutputStream bufferedOutputStream) throws IOException {
+        if(key.equals("n") || key.equals("size")) {
+            bufferedOutputStream.write(key.getBytes());
+            bufferedOutputStream.write(" ".getBytes());
+            bufferedOutputStream.write(value.getBytes());
+            bufferedOutputStream.write("\n".getBytes());
+            return;
+        }
         bufferedOutputStream.write(key.getBytes());
         bufferedOutputStream.write(" ".getBytes());
-        bufferedOutputStream.write(value.getBytes());
-        bufferedOutputStream.write("\n".getBytes());
+        for (int i = 0; i < value.length(); i += 8) {
+            String byteString = value.substring(i, Math.min(i + 8, value.length()));
+            byte b = (byte) Integer.parseInt(byteString, 2);
+            bufferedOutputStream.write(b);
+        }
     }
 }
