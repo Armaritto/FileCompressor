@@ -6,11 +6,11 @@ import java.util.Random;
 public class textGenerator {
 
     private static final String CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    private static final int LINE_LENGTH = 10000;  // Length of each line
-    private static final int NUM_LINES = 100000;  // Number of lines in the file
+    private static final int LINE_LENGTH = 1000;  // Length of each line
+    private static final int NUM_LINES = 10000;  // Number of lines in the file
 
     public static void main(String[] args) {
-        String fileName = "largeTestFile.txt";
+        String fileName = "new.txt";
         generateLargeTestFile(fileName, NUM_LINES, LINE_LENGTH);
     }
 
@@ -32,6 +32,8 @@ public class textGenerator {
         for (int i = 0; i < length; i++) {
             int index = random.nextInt(CHARACTERS.length());
             line.append(CHARACTERS.charAt(index));
+            if(i%83 == 0 && i != 0)
+                line.append("\n");
         }
         return line.toString();
     }
