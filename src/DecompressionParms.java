@@ -16,6 +16,6 @@ public class DecompressionParms {
     }
     @Override
     public String toString() {
-        return "Decompression time: " + formatTime(decompressionTime) + "ms";
+        return "Decompression time: " + formatTime(decompressionTime);
     }
 }

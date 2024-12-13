@@ -23,14 +23,15 @@ public class Main {
             return;
         }
         String path = args[1];
-        if (!args[2].matches("\\d+")) {
+        if (operator == 'c' && !args[2].matches("\\d+")) {
             System.out.println("Invalid n.");
             return;
         }
-        int n = Integer.parseInt(args[2]);
         try {
-            if (operator == 'c')
-                System.out.println(compressor.compress(path,n));
+            if (operator == 'c') {
+                int n = Integer.parseInt(args[2]);
+                System.out.println(compressor.compress(path, n));
+            }
             else
                 System.out.println(decompressor.decompress(path));
             System.out.println("Bye.");
