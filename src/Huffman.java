@@ -1,11 +1,12 @@
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 public class Huffman {
-    HashMap<String, String> dict = new HashMap<>();
-    public HashMap<String, String> encode(HashMap<String, Integer> freq) {
+    HashMap<ByteBuffer, String> dict = new HashMap<>();
+    public HashMap<ByteBuffer, String> encode(HashMap<ByteBuffer, Integer> freq) {
         int n = freq.size();
         MinHeap minHeap = new MinHeap(n);
-        for(String key : freq.keySet())
+        for(ByteBuffer key : freq.keySet())
             minHeap.insert(new Node(key, freq.get(key)));
         for(int i=0; i<n-1; i++) {
             Node x = minHeap.extractMin();

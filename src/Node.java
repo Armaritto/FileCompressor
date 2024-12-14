@@ -1,10 +1,12 @@
+import java.nio.ByteBuffer;
+
 public class Node {
-    String data;
+    ByteBuffer data;
     int freq;
     Node left;
     Node right;
 
-    Node(String data, int freq) {
+    Node(ByteBuffer data, int freq) {
         this.data = data;
         this.freq = freq;
     }

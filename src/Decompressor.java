@@ -1,78 +1,71 @@
 import java.io.*;
-import java.sql.Time;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 
 public class Decompressor {
-    HashMap<String, String> dict = new HashMap<>();
+    HashMap<String, ByteBuffer> dict = new HashMap<>();
     private int n;
     private int size;
     private int padding;
     public DecompressionParms decompress(String input) {
         DecompressionParms decompressionParms = new DecompressionParms();
-        Time begin = new Time(System.currentTimeMillis());
-        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(input))) {
-            readHeader(bufferedInputStream);
+        try (FileInputStream fileInputStream = new FileInputStream(input);
+                                        FileChannel fileChannel = fileInputStream.getChannel()) {
+            ByteBuffer buffer = ByteBuffer.allocate((int) fileChannel.size());
+            fileChannel.read(buffer);
+            buffer.flip();
+            readHeader(buffer);
             String outputPath = convertPath(input);
-//            printContent(bufferedInputStream);
-            read_writeContent(bufferedInputStream, outputPath);
+            readAndWriteContent(buffer, outputPath);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(n);
-        System.out.println(size);
-        System.out.println(dict);
-        Time end = new Time(System.currentTimeMillis());
-        decompressionParms.setDecompressionTime((int) (end.getTime() - begin.getTime()));
         return decompressionParms;
     }
-    private void readHeader(BufferedInputStream inputStream) throws IOException {
+
+    private void readHeader(ByteBuffer buffer) throws IOException {
         StringBuilder lineBuilder = new StringBuilder();
-        int byteRead;
-        boolean headerParsed = false;
-        while ((byteRead = inputStream.read()) != -1) {
+        while (buffer.hasRemaining()) {
+            char byteRead = (char) buffer.get();
             if (byteRead == '\n') {
                 String line = lineBuilder.toString();
                 lineBuilder.setLength(0);
-                line = line.replace("\\n", "\n");
-                String[] parts = line.split(",");
-                if (parts[0].equals("padding")) {
-                    padding = Integer.parseInt(parts[1]);
-                } else if (parts[0].equals("n")) {
-                    n = Integer.parseInt(parts[1]);
-                } else if (parts[0].equals("size")) {
-                    size = Integer.parseInt(parts[1]);
-                    headerParsed = true;
-                    break;
+                String[] parts = line.split(",", 2);
+                switch (parts[0]){
+                    case "padding":
+                        padding = Integer.parseInt(parts[1]);
+                        break;
+                    case "n":
+                        n = Integer.parseInt(parts[1]);
+                        break;
+                    case "size":
+                        size = Integer.parseInt(parts[1]);
+                        break;
                 }
+                if (parts[0].equals("size"))
+                    break;
             }
             else
-                lineBuilder.append((char) byteRead);
+                lineBuilder.append(byteRead);
         }
-        if (!headerParsed)
-            throw new IOException("Header not properly formatted.");
-        boolean newLineFlag = false;
         for (int i = 0; i < size; i++) {
             lineBuilder.setLength(0);
-            while ((byteRead = inputStream.read()) != -1) {
+            while (buffer.hasRemaining()) {
+                char byteRead = (char) buffer.get();
                 if (byteRead == '\n') {
                     String line = lineBuilder.toString();
                     lineBuilder.setLength(0);
-                    if (line.isEmpty()) {
-                        newLineFlag = true;
-                        continue;
-                    }
                     String[] parts = line.split(",", 2);
-                    if (newLineFlag) {
-                        dict.put(parts[1], "\n");
-                        newLineFlag = false;
-                    }
-                    else
-                        dict.put(parts[1], parts[0]);
+                    ByteBuffer originalData = ByteBuffer.wrap(Base64.getDecoder().decode(parts[0]));
+                    dict.put(parts[1], originalData);
                     break;
                 }
                 else
-                    lineBuilder.append((char) byteRead);
+                    lineBuilder.append(byteRead);
             }
         }
     }
@@ -86,40 +79,42 @@ public class Decompressor {
         String newFilename = "extracted." + fileName;
         return dirPath + newFilename;
     }
-    private void read_writeContent(BufferedInputStream bufferedInputStream, String path){
-        try (BufferedOutputStream bufferedOutputStream
-                     = new BufferedOutputStream(new FileOutputStream(path))) {
-            int byteRead;
-            boolean flag = false;
-            StringBuilder sb = new StringBuilder();
-            while((byteRead = bufferedInputStream.read()) != -1) {
-                if(bufferedInputStream.available() == 0)
-                    flag = true;
-                byte curr = (byte) byteRead;
-                for(int i=7;i>=0;i--) {
-                    sb.append((curr>>i)&1);
-                    if(dict.containsKey(sb.toString())){
-                        bufferedOutputStream.write(dict.get(sb.toString()).getBytes());
-                        sb.setLength(0);
+    private void readAndWriteContent(ByteBuffer buffer, String path) {
+        try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(path))) {
+            StringBuilder bitString = new StringBuilder();
+            int lastByte = 0;
+            while (buffer.hasRemaining()) {
+                byte curr = buffer.get();
+//                int n = buffer.hasRemaining() ? 7 : 7 - padding;
+                int n;
+                if(buffer.hasRemaining())
+                    n = 7;
+                else {
+                    lastByte++;
+                    n = 7 - padding - 1;
+                    System.out.println("padding"+padding);
+                    System.out.println("n"+n);
+                }
+                if (lastByte > 1)
+                    break;
+                for (int i = n; i >= 0; i--) {
+                    if(lastByte == 1)
+                        System.out.println("before"+bitString);
+                    bitString.append((curr >> i) & 1);
+                    if(lastByte == 1)
+                        System.out.println("after"+bitString);
+                    if (dict.containsKey(bitString.toString())) {
+                        ByteBuffer decompressedDataBuffer = dict.get(bitString.toString());
+                        byte[] decompressedBytes = decompressedDataBuffer.array();
+                        bufferedOutputStream.write(decompressedBytes);
+                        System.out.println(bitString + " : " + Arrays.toString(decompressedBytes));
+                        bitString.setLength(0);
                     }
-                    if(flag && i==padding)
-                        break;
                 }
             }
         }
         catch (IOException e) {
-            System.out.println("Error writing the content.");
+            System.out.println("Error writing the decompressed content.");
         }
-    }
-    private void printContent(BufferedInputStream bufferedInputStream) throws IOException {
-        int byteRead;
-        StringBuilder sb = new StringBuilder();
-        while((byteRead = bufferedInputStream.read()) != -1) {
-            byte curr = (byte) byteRead;
-            for(int i=7;i>=0;i--) {
-                sb.append((curr>>i)&1);
-            }
-        }
-        System.out.println(sb);
     }
 }

@@ -1,7 +1,9 @@
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.sql.Time;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 
 /**
@@ -26,8 +28,8 @@ import java.util.HashMap;
  </a>
  */
 public class Compressor {
-    HashMap<String, Integer> freq = new HashMap<>();
-    HashMap<String, String> dict = new HashMap<>();
+    HashMap<ByteBuffer, Integer> freq = new HashMap<>();
+    HashMap<ByteBuffer, String> dict = new HashMap<>();
     int padding = 0;
     public CompressedParms compress(String path, int n) throws IOException {
         CompressedParms compressedParms = new CompressedParms();
@@ -59,9 +61,8 @@ public class Compressor {
             byte[] buffer = new byte[n];
             int bytesRead;
             while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
-                if (bytesRead<n)
-                    buffer = Arrays.copyOf(buffer, bytesRead);
-                String key = new String(buffer);
+                byte[] bufferCopy = Arrays.copyOf(buffer, bytesRead);
+                ByteBuffer key = ByteBuffer.wrap(bufferCopy);
                 freq.put(key, freq.getOrDefault(key, 0) + 1);
             }
         } catch (IOException e) {
@@ -76,8 +77,10 @@ public class Compressor {
         bufferedWriting("padding", "0", bufferedOutputStream);
         bufferedWriting("n", String.valueOf(n), bufferedOutputStream);
         bufferedWriting("size", String.valueOf(dict.size()), bufferedOutputStream);
-        for(String key: freq.keySet())
-            bufferedWriting(key, dict.get(key), bufferedOutputStream);
+        for (ByteBuffer key : freq.keySet()) {
+            String keyBase64 = Base64.getEncoder().encodeToString(key.array());
+            bufferedWriting(keyBase64, dict.get(key), bufferedOutputStream);
+        }
     }
     private void writeContent(BufferedOutputStream bufferedOutputStream, String oldPath, int n) throws IOException {
         try (BufferedInputStream bufferedInputStream
@@ -86,17 +89,20 @@ public class Compressor {
             int bytesRead;
             StringBuilder bitString = new StringBuilder();
             while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
-                if(bytesRead<n)
-                    buffer = Arrays.copyOf(buffer, bytesRead);
-                String key = new String(buffer);
+                byte[] bufferCopy = Arrays.copyOf(buffer, bytesRead);
+                ByteBuffer key = ByteBuffer.wrap(bufferCopy);
                 String encodedValue = dict.get(key);
-                bitString.append(encodedValue);
-                while(bitString.length()>=8) {
-                    String byteString = bitString.substring(0, 8);
-                    byte b = (byte) Integer.parseInt(byteString, 2);
-                    bufferedOutputStream.write(b);
-                    bitString.delete(0, 8);
+                if (encodedValue != null) {
+                    bitString.append(encodedValue);
+                    while (bitString.length()>=8) {
+                        String byteString = bitString.substring(0, 8);
+                        byte b = (byte) Integer.parseInt(byteString, 2);
+                        bufferedOutputStream.write(b);
+                        bitString.delete(0, 8);
+                    }
                 }
+                else
+                    System.out.println("No encoding found for: " + Arrays.toString(bufferCopy));
             }
             if(!bitString.isEmpty()){
                 padding = 8 - bitString.length();
@@ -127,29 +133,10 @@ public class Compressor {
         bufferedOutputStream.write(value.getBytes());
         bufferedOutputStream.write("\n".getBytes());
     }
-    private void writePadding(String path) throws IOException {
+    private void writePadding(String path) throws IOException{
         RandomAccessFile file = new RandomAccessFile(path, "rw");
-        boolean paddingUpdated = false;
         file.seek(0);
-        String line;
-        long writePosition = 0;
-        while ((line = file.readLine()) != null) {
-            String decodedLine = new String(line.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
-            if (decodedLine.startsWith("padding,")) {
-                paddingUpdated = true;
-                writePosition = file.getFilePointer() - line.getBytes(StandardCharsets.ISO_8859_1).length - 1;
-                break;
-            }
-            if (!decodedLine.contains(",")) break;
-        }
-        if (paddingUpdated) {
-            file.seek(writePosition);
-            file.write(("padding," + padding + "\n").getBytes(StandardCharsets.UTF_8));
-        }
-        else {
-            file.seek(0);
-            file.write(("padding," + padding + "\n").getBytes(StandardCharsets.UTF_8));
-        }
+        file.write(("padding," + padding + "\n").getBytes(StandardCharsets.UTF_8));
         file.close();
     }
 }
