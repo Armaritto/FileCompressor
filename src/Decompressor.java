@@ -1,6 +1,8 @@
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
+import java.sql.Time;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
@@ -12,18 +14,23 @@ public class Decompressor {
     private int padding;
     public DecompressionParms decompress(String input) {
         DecompressionParms decompressionParms = new DecompressionParms();
+        Time begin = new Time(System.currentTimeMillis());
         try (FileInputStream fileInputStream = new FileInputStream(input);
                                         FileChannel fileChannel = fileInputStream.getChannel()) {
             ByteBuffer buffer = ByteBuffer.allocate((int) fileChannel.size());
             fileChannel.read(buffer);
             buffer.flip();
             readHeader(buffer);
+//            for(String key: dict.keySet())
+//                System.out.println(key + " : " + new String(dict.get(key).array(), StandardCharsets.UTF_8));
             String outputPath = convertPath(input);
             readAndWriteContent(buffer, outputPath);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
+        Time end = new Time(System.currentTimeMillis());
+        decompressionParms.setDecompressionTime((int) (end.getTime() - begin.getTime()));
         return decompressionParms;
     }
 
@@ -82,36 +89,24 @@ public class Decompressor {
     private void readAndWriteContent(ByteBuffer buffer, String path) {
         try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(path))) {
             StringBuilder bitString = new StringBuilder();
-            int lastByte = 0;
+//            StringBuilder allBytes = new StringBuilder();
             while (buffer.hasRemaining()) {
                 byte curr = buffer.get();
-//                int n = buffer.hasRemaining() ? 7 : 7 - padding;
-                int n;
-                if(buffer.hasRemaining())
-                    n = 7;
-                else {
-                    lastByte++;
-                    n = 7 - padding - 1;
-                    System.out.println("padding"+padding);
-                    System.out.println("n"+n);
-                }
-                if (lastByte > 1)
-                    break;
-                for (int i = n; i >= 0; i--) {
-                    if(lastByte == 1)
-                        System.out.println("before"+bitString);
+                int k = buffer.hasRemaining() ? 7 : 7 - padding;
+                if(!buffer.hasRemaining() && padding > 0)
+                    curr = (byte) (curr >> padding);
+                for (int i = k; i >= 0; i--) {
                     bitString.append((curr >> i) & 1);
-                    if(lastByte == 1)
-                        System.out.println("after"+bitString);
+//                    allBytes.append((curr >> i) & 1);
                     if (dict.containsKey(bitString.toString())) {
                         ByteBuffer decompressedDataBuffer = dict.get(bitString.toString());
                         byte[] decompressedBytes = decompressedDataBuffer.array();
                         bufferedOutputStream.write(decompressedBytes);
-                        System.out.println(bitString + " : " + Arrays.toString(decompressedBytes));
                         bitString.setLength(0);
                     }
                 }
             }
+//            System.out.println("allBytes: "+allBytes);
         }
         catch (IOException e) {
             System.out.println("Error writing the decompressed content.");

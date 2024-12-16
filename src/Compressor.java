@@ -36,7 +36,8 @@ public class Compressor {
         Time begin = new Time(System.currentTimeMillis());
         initializeFreq(path,n);
         encode();
-        System.out.println(dict);
+//        for(ByteBuffer key: dict.keySet())
+//            System.out.println(new String(key.array(), StandardCharsets.UTF_8) + " : " + dict.get(key));
         String newPath = convertPath(path,n);
         try (BufferedOutputStream bufferedOutputStream
                      = new BufferedOutputStream(new FileOutputStream(newPath))) {
@@ -88,6 +89,7 @@ public class Compressor {
             byte[] buffer = new byte[n];
             int bytesRead;
             StringBuilder bitString = new StringBuilder();
+//            StringBuilder allBytes = new StringBuilder();
             while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
                 byte[] bufferCopy = Arrays.copyOf(buffer, bytesRead);
                 ByteBuffer key = ByteBuffer.wrap(bufferCopy);
@@ -96,6 +98,7 @@ public class Compressor {
                     bitString.append(encodedValue);
                     while (bitString.length()>=8) {
                         String byteString = bitString.substring(0, 8);
+//                        allBytes.append(byteString);
                         byte b = (byte) Integer.parseInt(byteString, 2);
                         bufferedOutputStream.write(b);
                         bitString.delete(0, 8);
@@ -109,9 +112,11 @@ public class Compressor {
                 while(bitString.length()<8)
                     bitString.append("0");
                 String byteString = bitString.substring(0, 8);
+//                allBytes.append(byteString);
                 byte b = (byte) Integer.parseInt(byteString, 2);
                 bufferedOutputStream.write(b);
             }
+//            System.out.println("allBytes: "+allBytes);
         }
         catch (IOException e) {
             System.out.println("Error writing the content.");
