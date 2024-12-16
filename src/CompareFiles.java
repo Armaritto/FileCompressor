@@ -4,14 +4,20 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class CompareFiles {
-    public static void main(String[] args) {
-        Path file1 = Paths.get("/home/ubuntu/GitHub/FileCompressor/extracted.21010229.1.gbbct10.seq");
-        Path file2 = Paths.get("/home/ubuntu/GitHub/FileCompressor/gbbct10.seq");
+    public static boolean compare(String fileName) {
+        Path file1 = Paths.get("/home/ubuntu/GitHub/FileCompressor/extracted.21010229.1."+fileName);
+        Path file2 = Paths.get("/home/ubuntu/GitHub/FileCompressor/"+fileName);
         try {
             boolean isEqual = Files.mismatch(file1, file2) == -1;
             System.out.println("Files are equal: " + isEqual);
+            return isEqual;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
     }
+    public static void main(String[] args) {
+        System.out.println(compare("new.txt"));
+    }
+
 }
