@@ -5,8 +5,8 @@ import java.nio.file.Paths;
 
 public class CompareFiles {
     public static boolean compare(String fileName) {
-        Path file1 = Paths.get("/home/ubuntu/GitHub/FileCompressor/extracted.21010229.1."+fileName);
-        Path file2 = Paths.get("/home/ubuntu/GitHub/FileCompressor/"+fileName);
+        Path file1 = Paths.get("/home/ubuntu/GitHub/FileCompressor/Tests/extracted.21010229.1."+fileName);
+        Path file2 = Paths.get("/home/ubuntu/GitHub/FileCompressor/Tests/"+fileName);
         try {
             boolean isEqual = Files.mismatch(file1, file2) == -1;
             System.out.println("Files are equal: " + isEqual);
