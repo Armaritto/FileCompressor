@@ -5,7 +5,6 @@ import java.sql.Time;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
-
 /**
  Buffered Input Stream
  <br>
@@ -26,10 +25,25 @@ import java.util.HashMap;
  <a href="https://docs.oracle.com/javase/8/docs/api/java/io/RandomAccessFile.html">
  Oracle Docs
  </a>
+ <br><br>
+ Base64
+ <br>
+ <a href="https://www.baeldung.com/java-base64-encode-and-decode">
+ Baeldung
+ </a>
+ <a href="https://www.geeksforgeeks.org/basic-type-base64-encoding-and-decoding-in-java/">
+ Geeks for Geeks
+ </a>
+ <br><br>
+ HashMap merge
+ <br>
+ <a href="https://docs.vultr.com/java/standard-library/java/util/HashMap/merge">
+ VULTR
+ </a>
  */
 public class Compressor {
     HashMap<ByteBuffer, Integer> freq = new HashMap<>();
-    HashMap<ByteBuffer, String> dict = new HashMap<>();
+    HashMap<ByteBuffer, Integer> dict = new HashMap<>();
     int padding = 0;
     public CompressedParms compress(String path, int n) throws IOException {
         CompressedParms compressedParms = new CompressedParms();
@@ -41,7 +55,7 @@ public class Compressor {
         String newPath = convertPath(path,n);
         try (BufferedOutputStream bufferedOutputStream
                      = new BufferedOutputStream(new FileOutputStream(newPath))) {
-            writeHeader(bufferedOutputStream,n);
+            writeHeader(bufferedOutputStream);
             writeContent(bufferedOutputStream,path,n);
         }
         catch (IOException e) {
@@ -74,10 +88,9 @@ public class Compressor {
         Huffman huffman = new Huffman();
         dict = huffman.encode(freq);
     }
-    private void writeHeader(BufferedOutputStream bufferedOutputStream, int n) throws IOException {
-        bufferedWriting("padding", "0", bufferedOutputStream);
-        bufferedWriting("n", String.valueOf(n), bufferedOutputStream);
-        bufferedWriting("size", String.valueOf(dict.size()), bufferedOutputStream);
+    private void writeHeader(BufferedOutputStream bufferedOutputStream) throws IOException {
+        bufferedWriting("padding", 0, bufferedOutputStream);
+        bufferedWriting("size", dict.size(), bufferedOutputStream);
         for (ByteBuffer key : freq.keySet()) {
             String keyBase64 = Base64.getEncoder().encodeToString(key.array());
             bufferedWriting(keyBase64, dict.get(key), bufferedOutputStream);
@@ -88,34 +101,31 @@ public class Compressor {
             byte[] buffer = new byte[n];
             int bytesRead;
             ByteBuffer key;
-            String encodedValue;
-            int bitBuffer = 0;  // Stores bits as an integer
-            int bitCount = 0;   // Tracks the number of bits in the buffer
-
+            int encodedValue;
+            int bitBuffer = 0;
+            int bitCount = 0;
+            int bitLength;
             while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
                 key = ByteBuffer.wrap(Arrays.copyOf(buffer, bytesRead));
                 encodedValue = dict.get(key);
-                if (encodedValue != null) {
-                    for (char c : encodedValue.toCharArray()) {
-                        bitBuffer = (bitBuffer << 1) | (c - '0'); // Add the bit to the buffer
-                        bitCount++;
-                        if (bitCount == 8) { // When the buffer holds a full byte
-                            bufferedOutputStream.write((byte) bitBuffer);
-                            bitBuffer = 0;  // Reset the buffer
-                            bitCount = 0;   // Reset the count
-                        }
+                bitLength = Integer.SIZE - Integer.numberOfLeadingZeros(encodedValue) - 1;
+                for (int i = bitLength - 1; i >= 0; i--) {
+                    bitBuffer = (bitBuffer << 1) | ((encodedValue >> i) & 1) ;
+                    bitCount++;
+                    if(bitCount == 8) {
+                        bufferedOutputStream.write((byte) bitBuffer);
+                        bitBuffer = 0;
+                        bitCount = 0;
                     }
-                } else {
-                    System.out.println("No encoding found for: " + Arrays.toString(Arrays.copyOf(buffer, bytesRead)));
                 }
             }
-
-            // Write remaining bits with padding if necessary
-            if (bitCount > 0) {
-                bitBuffer <<= (8 - bitCount); // Pad the remaining bits
+            if(bitCount > 0) {
+                padding = 8 - bitCount;
+                bitBuffer <<= (8 - bitCount);
                 bufferedOutputStream.write((byte) bitBuffer);
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             System.out.println("Error writing the content.");
         }
     }
@@ -129,10 +139,10 @@ public class Compressor {
         String newFilename = "21010229." + n + "." + fileName + extension + ".hc";
         return dirPath + newFilename;
     }
-    private static void bufferedWriting(String key, String value, BufferedOutputStream bufferedOutputStream) throws IOException {
+    private static void bufferedWriting(String key, Integer value, BufferedOutputStream bufferedOutputStream) throws IOException {
         bufferedOutputStream.write(key.getBytes());
         bufferedOutputStream.write(",".getBytes());
-        bufferedOutputStream.write(value.getBytes());
+        bufferedOutputStream.write(value.toString().getBytes()); //------------------->>
         bufferedOutputStream.write("\n".getBytes());
     }
     private void writePadding(String path) throws IOException{

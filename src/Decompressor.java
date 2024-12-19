@@ -8,8 +8,7 @@ import java.util.Base64;
 import java.util.HashMap;
 
 public class Decompressor {
-    HashMap<String, ByteBuffer> dict = new HashMap<>();
-    private int n;
+    HashMap<Integer, ByteBuffer> dict = new HashMap<>();
     private int size;
     private int padding;
     public DecompressionParms decompress(String input) {
@@ -21,7 +20,7 @@ public class Decompressor {
             fileChannel.read(buffer);
             buffer.flip();
             readHeader(buffer);
-//            for(String key: dict.keySet())
+//            for(int key: dict.keySet())
 //                System.out.println(key + " : " + new String(dict.get(key).array(), StandardCharsets.UTF_8));
             String outputPath = convertPath(input);
             readAndWriteContent(buffer, outputPath);
@@ -33,21 +32,20 @@ public class Decompressor {
         decompressionParms.setDecompressionTime((int) (end.getTime() - begin.getTime()));
         return decompressionParms;
     }
-
     private void readHeader(ByteBuffer buffer) throws IOException {
         StringBuilder lineBuilder = new StringBuilder();
+        String line;
+        String[] parts;
+        char byteRead;
         while (buffer.hasRemaining()) {
-            char byteRead = (char) buffer.get();
+            byteRead = (char) buffer.get();
             if (byteRead == '\n') {
-                String line = lineBuilder.toString();
+                line = lineBuilder.toString();
                 lineBuilder.setLength(0);
-                String[] parts = line.split(",", 2);
+                parts = line.split(",", 2);
                 switch (parts[0]){
                     case "padding":
                         padding = Integer.parseInt(parts[1]);
-                        break;
-                    case "n":
-                        n = Integer.parseInt(parts[1]);
                         break;
                     case "size":
                         size = Integer.parseInt(parts[1]);
@@ -59,16 +57,17 @@ public class Decompressor {
             else
                 lineBuilder.append(byteRead);
         }
-        for (int i = 0; i < size; i++) {
+        for (int i=0;i<size;i++) {
             lineBuilder.setLength(0);
+            ByteBuffer originalData;
             while (buffer.hasRemaining()) {
-                char byteRead = (char) buffer.get();
+                byteRead = (char) buffer.get();
                 if (byteRead == '\n') {
-                    String line = lineBuilder.toString();
+                    line = lineBuilder.toString();
                     lineBuilder.setLength(0);
-                    String[] parts = line.split(",", 2);
-                    ByteBuffer originalData = ByteBuffer.wrap(Base64.getDecoder().decode(parts[0]));
-                    dict.put(parts[1], originalData);
+                    parts = line.split(",", 2);
+                    originalData = ByteBuffer.wrap(Base64.getDecoder().decode(parts[0]));
+                    dict.put(Integer.valueOf(parts[1]), originalData);
                     break;
                 }
                 else
@@ -76,7 +75,6 @@ public class Decompressor {
             }
         }
     }
-
     private String convertPath(String path) {
         int index = path.lastIndexOf('/');
         String dirPath = path.substring(0, index + 1);
@@ -88,25 +86,25 @@ public class Decompressor {
     }
     private void readAndWriteContent(ByteBuffer buffer, String path) {
         try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(path))) {
-            StringBuilder bitString = new StringBuilder();
-//            StringBuilder allBytes = new StringBuilder();
+            int bitBuffer = 1;
+            byte curr;
+            int k;
+            byte[] decompressedBytes;
             while (buffer.hasRemaining()) {
-                byte curr = buffer.get();
-                int k = buffer.hasRemaining() ? 7 : 7 - padding;
+                curr = buffer.get();
+                k = buffer.hasRemaining() ? 7 : 7 - padding;
                 if(!buffer.hasRemaining() && padding > 0)
                     curr = (byte) (curr >> padding);
                 for (int i = k; i >= 0; i--) {
-                    bitString.append((curr >> i) & 1);
-//                    allBytes.append((curr >> i) & 1);
-                    ByteBuffer decompressedDataBuffer = dict.get(bitString.toString());
-                    if (decompressedDataBuffer != null) {
-                        byte[] decompressedBytes = decompressedDataBuffer.array();
+                    bitBuffer = (bitBuffer << 1) | ((curr >> i) & 1);
+                    if (dict.containsKey(bitBuffer)) {
+                        ByteBuffer decompressedDataBuffer = dict.get(bitBuffer);
+                        decompressedBytes = decompressedDataBuffer.array();
                         bufferedOutputStream.write(decompressedBytes);
-                        bitString.setLength(0);
+                        bitBuffer = 1;
                     }
                 }
             }
-//            System.out.println("allBytes: "+allBytes);
         }
         catch (IOException e) {
             System.out.println("Error writing the decompressed content.");

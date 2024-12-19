@@ -14,11 +14,11 @@ class MainTest_50 {
 
     @Test
     void largeTestFile_txt() {
-        String[] args = {"c", "/home/ubuntu/GitHub/FileCompressor/Tests/RickRoll.mp4", "50"};
+        String[] args = {"c", "/home/ubuntu/GitHub/FileCompressor/Tests/largeTestFile.txt", "50"};
         Main.main(args);
-        args = new String[]{"d", "/home/ubuntu/GitHub/FileCompressor/Tests/21010229.50.RickRoll.mp4.hc"};
+        args = new String[]{"d", "/home/ubuntu/GitHub/FileCompressor/Tests/21010229.50.largeTestFile.txt.hc"};
         Main.main(args);
-        Assertions.assertTrue(CompareFiles.compare("RickRoll.mp4",50));
+        Assertions.assertTrue(CompareFiles.compare("largeTestFile.txt",50));
     }
 
     @Test
