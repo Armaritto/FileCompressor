@@ -98,8 +98,8 @@ public class Decompressor {
                 for (int i = k; i >= 0; i--) {
                     bitString.append((curr >> i) & 1);
 //                    allBytes.append((curr >> i) & 1);
-                    if (dict.containsKey(bitString.toString())) {
-                        ByteBuffer decompressedDataBuffer = dict.get(bitString.toString());
+                    ByteBuffer decompressedDataBuffer = dict.get(bitString.toString());
+                    if (decompressedDataBuffer != null) {
                         byte[] decompressedBytes = decompressedDataBuffer.array();
                         bufferedOutputStream.write(decompressedBytes);
                         bitString.setLength(0);

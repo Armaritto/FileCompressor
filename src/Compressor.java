@@ -47,7 +47,7 @@ public class Compressor {
         catch (IOException e) {
             System.out.println("Error writing the content.");
         }
-        System.out.println("padding: "+padding);
+//        System.out.println("padding: "+padding);
         writePadding(newPath);
         Time end = new Time(System.currentTimeMillis());
         compressedParms.setCompressionTime((int) (end.getTime() - begin.getTime()));
@@ -64,7 +64,7 @@ public class Compressor {
             while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
                 byte[] bufferCopy = Arrays.copyOf(buffer, bytesRead);
                 ByteBuffer key = ByteBuffer.wrap(bufferCopy);
-                freq.put(key, freq.getOrDefault(key, 0) + 1);
+                freq.merge(key, 1, Integer::sum);
             }
         } catch (IOException e) {
             System.out.println("Error reading the file.");
@@ -84,41 +84,38 @@ public class Compressor {
         }
     }
     private void writeContent(BufferedOutputStream bufferedOutputStream, String oldPath, int n) throws IOException {
-        try (BufferedInputStream bufferedInputStream
-                     = new BufferedInputStream(new FileInputStream (oldPath))) {
+        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(oldPath))) {
             byte[] buffer = new byte[n];
             int bytesRead;
-            StringBuilder bitString = new StringBuilder();
-//            StringBuilder allBytes = new StringBuilder();
+            ByteBuffer key;
+            String encodedValue;
+            int bitBuffer = 0;  // Stores bits as an integer
+            int bitCount = 0;   // Tracks the number of bits in the buffer
+
             while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
-                byte[] bufferCopy = Arrays.copyOf(buffer, bytesRead);
-                ByteBuffer key = ByteBuffer.wrap(bufferCopy);
-                String encodedValue = dict.get(key);
+                key = ByteBuffer.wrap(Arrays.copyOf(buffer, bytesRead));
+                encodedValue = dict.get(key);
                 if (encodedValue != null) {
-                    bitString.append(encodedValue);
-                    while (bitString.length()>=8) {
-                        String byteString = bitString.substring(0, 8);
-//                        allBytes.append(byteString);
-                        byte b = (byte) Integer.parseInt(byteString, 2);
-                        bufferedOutputStream.write(b);
-                        bitString.delete(0, 8);
+                    for (char c : encodedValue.toCharArray()) {
+                        bitBuffer = (bitBuffer << 1) | (c - '0'); // Add the bit to the buffer
+                        bitCount++;
+                        if (bitCount == 8) { // When the buffer holds a full byte
+                            bufferedOutputStream.write((byte) bitBuffer);
+                            bitBuffer = 0;  // Reset the buffer
+                            bitCount = 0;   // Reset the count
+                        }
                     }
+                } else {
+                    System.out.println("No encoding found for: " + Arrays.toString(Arrays.copyOf(buffer, bytesRead)));
                 }
-                else
-                    System.out.println("No encoding found for: " + Arrays.toString(bufferCopy));
             }
-            if(!bitString.isEmpty()){
-                padding = 8 - bitString.length();
-                while(bitString.length()<8)
-                    bitString.append("0");
-                String byteString = bitString.substring(0, 8);
-//                allBytes.append(byteString);
-                byte b = (byte) Integer.parseInt(byteString, 2);
-                bufferedOutputStream.write(b);
+
+            // Write remaining bits with padding if necessary
+            if (bitCount > 0) {
+                bitBuffer <<= (8 - bitCount); // Pad the remaining bits
+                bufferedOutputStream.write((byte) bitBuffer);
             }
-//            System.out.println("allBytes: "+allBytes);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.out.println("Error writing the content.");
         }
     }
