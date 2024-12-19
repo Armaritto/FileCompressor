@@ -9,7 +9,7 @@ class MainTest_1 {
         Main.main(args);
         args = new String[]{"d", "/home/ubuntu/GitHub/FileCompressor/Tests/21010229.1.new.txt.hc"};
         Main.main(args);
-        Assertions.assertTrue(CompareFiles.compare("new.txt"));
+        Assertions.assertTrue(CompareFiles.compare("new.txt",1));
     }
 
     @Test
@@ -18,7 +18,7 @@ class MainTest_1 {
         Main.main(args);
         args = new String[]{"d", "/home/ubuntu/GitHub/FileCompressor/Tests/21010229.1.RickRoll.mp4.hc"};
         Main.main(args);
-        Assertions.assertTrue(CompareFiles.compare("RickRoll.mp4"));
+        Assertions.assertTrue(CompareFiles.compare("RickRoll.mp4",1));
     }
 
     @Test
@@ -27,7 +27,7 @@ class MainTest_1 {
         Main.main(args);
         args = new String[]{"d", "/home/ubuntu/GitHub/FileCompressor/Tests/21010229.1.gbbct10.seq.hc"};
         Main.main(args);
-        Assertions.assertTrue(CompareFiles.compare("gbbct10.seq"));
+        Assertions.assertTrue(CompareFiles.compare("gbbct10.seq",1));
     }
 
     @Test
@@ -36,7 +36,7 @@ class MainTest_1 {
         Main.main(args);
         args = new String[]{"d", "/home/ubuntu/GitHub/FileCompressor/Tests/21010229.1.greedy.pdf.hc"};
         Main.main(args);
-        Assertions.assertTrue(CompareFiles.compare("greedy.pdf"));
+        Assertions.assertTrue(CompareFiles.compare("greedy.pdf",1));
     }
 
     @Test
@@ -45,7 +45,7 @@ class MainTest_1 {
         Main.main(args);
         args = new String[]{"d", "/home/ubuntu/GitHub/FileCompressor/Tests/21010229.1.up-movie.jpg.hc"};
         Main.main(args);
-        Assertions.assertTrue(CompareFiles.compare("up-movie.jpg"));
+        Assertions.assertTrue(CompareFiles.compare("up-movie.jpg",1));
     }
 
     @Test
@@ -54,7 +54,7 @@ class MainTest_1 {
         Main.main(args);
         args = new String[]{"d", "/home/ubuntu/GitHub/FileCompressor/Tests/21010229.1.parking.jpeg.hc"};
         Main.main(args);
-        Assertions.assertTrue(CompareFiles.compare("parking.jpeg"));
+        Assertions.assertTrue(CompareFiles.compare("parking.jpeg",1));
     }
 
     @Test
@@ -63,7 +63,7 @@ class MainTest_1 {
         Main.main(args);
         args = new String[]{"d", "/home/ubuntu/GitHub/FileCompressor/Tests/21010229.1.discord.deb.hc"};
         Main.main(args);
-        Assertions.assertTrue(CompareFiles.compare("discord.deb"));
+        Assertions.assertTrue(CompareFiles.compare("discord.deb",1));
     }
 
     @Test
@@ -72,7 +72,7 @@ class MainTest_1 {
         Main.main(args);
         args = new String[]{"d", "/home/ubuntu/GitHub/FileCompressor/Tests/21010229.1.RickRoll.mp4.hc"};
         Main.main(args);
-        Assertions.assertTrue(CompareFiles.compare("RickRoll.mp4"));
+        Assertions.assertTrue(CompareFiles.compare("RickRoll.mp4",1));
     }
 
     @Test
@@ -81,7 +81,7 @@ class MainTest_1 {
         Main.main(args);
         args = new String[]{"d", "/home/ubuntu/GitHub/FileCompressor/Tests/21010229.1.Despacito.mp3.hc"};
         Main.main(args);
-        Assertions.assertTrue(CompareFiles.compare("Despacito.mp3"));
+        Assertions.assertTrue(CompareFiles.compare("Despacito.mp3",1));
     }
 
 }
