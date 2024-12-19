@@ -6,6 +6,8 @@
     </a>
  */
 public class Main {
+    public static CompressedParms compressedParms;
+    public static DecompressionParms decompressionParms;
     public static void main(String[] args) {
         Compressor compressor = new Compressor();
         Decompressor decompressor = new Decompressor();
@@ -30,10 +32,13 @@ public class Main {
         try {
             if (operator == 'c') {
                 int n = Integer.parseInt(args[2]);
-                System.out.println(compressor.compress(path, n));
+                compressedParms = compressor.compress(path, n);
+                System.out.println(compressedParms);
             }
-            else
-                System.out.println(decompressor.decompress(path));
+            else {
+                decompressionParms = decompressor.decompress(path);
+                System.out.println(decompressionParms);
+            }
             System.out.println("Bye.");
         }
         catch (Exception e) {
