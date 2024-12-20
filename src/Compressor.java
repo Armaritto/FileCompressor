@@ -73,12 +73,14 @@ public class Compressor {
     private void initializeFreq(String path, int n) {
         try (BufferedInputStream bufferedInputStream
                      = new BufferedInputStream(new FileInputStream(path))) {
-            byte[] buffer = new byte[n];
+            byte[] buffer = new byte[8192];
             int bytesRead;
+            ByteBuffer key;
             while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
-                byte[] bufferCopy = Arrays.copyOf(buffer, bytesRead);
-                ByteBuffer key = ByteBuffer.wrap(bufferCopy);
-                freq.merge(key, 1, Integer::sum);
+                for (int i=0;i<bytesRead;i+=n) {
+                    key = ByteBuffer.wrap(Arrays.copyOfRange(buffer, i, i + Math.min(n, bytesRead - i)));
+                    freq.merge(key, 1, Integer::sum);
+                }
             }
         } catch (IOException e) {
             System.out.println("Error reading the file.");
@@ -98,7 +100,7 @@ public class Compressor {
     }
     private void writeContent(BufferedOutputStream bufferedOutputStream, String oldPath, int n) throws IOException {
         try (BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(oldPath))) {
-            byte[] buffer = new byte[n];
+            byte[] buffer = new byte[8192];
             int bytesRead;
             ByteBuffer key;
             int encodedValue;
@@ -106,16 +108,19 @@ public class Compressor {
             int bitCount = 0;
             int bitLength;
             while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
-                key = ByteBuffer.wrap(Arrays.copyOf(buffer, bytesRead));
-                encodedValue = dict.get(key);
-                bitLength = Integer.SIZE - Integer.numberOfLeadingZeros(encodedValue) - 1;
-                for (int i = bitLength - 1; i >= 0; i--) {
-                    bitBuffer = (bitBuffer << 1) | ((encodedValue >> i) & 1) ;
-                    bitCount++;
-                    if(bitCount == 8) {
-                        bufferedOutputStream.write((byte) bitBuffer);
-                        bitBuffer = 0;
-                        bitCount = 0;
+                for (int i=0;i<bytesRead;i+=n){
+                    int length = Math.min(n, bytesRead - i);
+                    key = ByteBuffer.wrap(Arrays.copyOfRange(buffer, i, i + length));
+                    encodedValue = dict.get(key);
+                    bitLength = Integer.SIZE - Integer.numberOfLeadingZeros(encodedValue) - 1;
+                    for (int j=bitLength-1;j>=0;j--) {
+                        bitBuffer = (bitBuffer << 1) | ((encodedValue >> j) & 1);
+                        bitCount++;
+                        if (bitCount == 8) {
+                            bufferedOutputStream.write((byte) bitBuffer);
+                            bitBuffer = 0;
+                            bitCount = 0;
+                        }
                     }
                 }
             }
