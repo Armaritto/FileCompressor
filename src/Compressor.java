@@ -35,10 +35,10 @@ import java.util.HashMap;
  Geeks for Geeks
  </a>
  <br><br>
- HashMap merge
+ HashMap compute
  <br>
- <a href="https://docs.vultr.com/java/standard-library/java/util/HashMap/merge">
- VULTR
+ <a href="https://stackoverflow.com/questions/70430071/for-hashmap-is-it-more-efficient-to-use-compute-or-put">
+ StackOverFlow
  </a>
  */
 public class Compressor {
@@ -73,13 +73,13 @@ public class Compressor {
     private void initializeFreq(String path, int n) {
         try (BufferedInputStream bufferedInputStream
                      = new BufferedInputStream(new FileInputStream(path))) {
-            byte[] buffer = new byte[8192];
+            byte[] buffer = new byte[65536];
             int bytesRead;
             ByteBuffer key;
             while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
                 for (int i=0;i<bytesRead;i+=n) {
                     key = ByteBuffer.wrap(Arrays.copyOfRange(buffer, i, i + Math.min(n, bytesRead - i)));
-                    freq.merge(key, 1, Integer::sum);
+                    freq.compute(key, (k, v) -> v == null ? 1 : v + 1);
                 }
             }
         } catch (IOException e) {
@@ -100,7 +100,7 @@ public class Compressor {
     }
     private void writeContent(BufferedOutputStream bufferedOutputStream, String oldPath, int n) throws IOException {
         try (BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(oldPath))) {
-            byte[] buffer = new byte[8192];
+            byte[] buffer = new byte[65536];
             int bytesRead;
             ByteBuffer key;
             int encodedValue;
