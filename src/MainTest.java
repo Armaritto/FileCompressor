@@ -12,7 +12,7 @@ import java.nio.file.StandardOpenOption;
 class MainTest {
     static File file;
     StringBuilder sb;
-    static int finalN = 3;
+    static int finalN = 5;
     static boolean runAll = true;
     @BeforeAll
     static void createFileToPutResults() {
@@ -61,30 +61,30 @@ class MainTest {
             sb.delete(0, sb.length());
         }
     }
-//    @Test
-//    void gbbct10_seq() throws IOException {
-//        runTest("gbbct10.seq");
-//    }
-//    @Test
-//    void largeTestFile_txt() throws IOException {
-//        runTest("largeTestFile.txt");
-//    }
-//    @Test
-//    void new_txt() throws IOException {
-//        runTest("new.txt");
-//    }
-//    @Test
-//    void discord_deb() throws IOException {
-//        runTest("discord.deb");
-//    }
-//    @Test
-//    void RickRoll_mp4() throws IOException {
-//        runTest("RickRoll.mp4");
-//    }
-//    @Test
-//    void Despacito_mp3() throws IOException {
-//        runTest("Despacito.mp3");
-//    }
+    @Test
+    void gbbct10_seq() throws IOException {
+        runTest("gbbct10.seq");
+    }
+    @Test
+    void largeTestFile_txt() throws IOException {
+        runTest("largeTestFile.txt");
+    }
+    @Test
+    void new_txt() throws IOException {
+        runTest("new.txt");
+    }
+    @Test
+    void discord_deb() throws IOException {
+        runTest("discord.deb");
+    }
+    @Test
+    void RickRoll_mp4() throws IOException {
+        runTest("RickRoll.mp4");
+    }
+    @Test
+    void Despacito_mp3() throws IOException {
+        runTest("Despacito.mp3");
+    }
     @Test
     void greedy_pdf() throws IOException {
         runTest("greedy.pdf");
