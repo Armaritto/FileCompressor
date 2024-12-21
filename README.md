@@ -1,6 +1,7 @@
 # Huffman Compression Analysis 
 
 Name: Armia Joseph Hakim
+
 Id: 21010229
 
 Here is the analysis of my implementation for huffman in comparison to 7-zip for n ranging from 1 to 5
