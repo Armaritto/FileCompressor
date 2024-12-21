@@ -52,7 +52,7 @@ class MainTest {
                 String path = "/home/ubuntu/GitHub/FileCompressor/Tests/" + fileName;
                 String[] args = {"c", "/home/ubuntu/GitHub/FileCompressor/Tests/" + fileName, String.valueOf(n)};
                 Main.main(args);
-                sb.append(fileName).append(" (Size: ").append(rewriteSize(Files.size(Path.of(path)))).append(" bytes)").append(" n = ").append(n).append("\n");
+                sb.append(fileName).append(" (Size: ").append(rewriteSize(Files.size(Path.of(path)))).append(")").append(" n = ").append(n).append("\n");
                 sb.append(Main.compressedParms.toString()).append("\n");
 
                 args = new String[]{"d", "/home/ubuntu/GitHub/FileCompressor/Tests/21010229." + n + "." + fileName + ".hc"};
