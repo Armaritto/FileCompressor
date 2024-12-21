@@ -77,18 +77,18 @@ class MainTest {
     void gbbct10_seq() throws IOException {
         runTest("gbbct10.seq");
     }
-//    @Test
-//    void largeTestFile_txt() throws IOException {
-//        runTest("largeTestFile.txt");
-//    }
+    @Test
+    void largeTestFile_txt() throws IOException {
+        runTest("largeTestFile.txt");
+    }
     @Test
     void gbbct10_old_seq() throws IOException {
         runTest("gbbct10_old.seq");
     }
-//    @Test
-//    void discord_deb() throws IOException {
-//        runTest("discord.deb");
-//    }
+    @Test
+    void discord_deb() throws IOException {
+        runTest("discord.deb");
+    }
     @Test
     void RickRoll_mp4() throws IOException {
         runTest("RickRoll.mp4");
