@@ -110,8 +110,6 @@ public class Compressor1 {
     private static void bufferedWriting(String key, Integer value, BufferedOutputStream bufferedOutputStream) throws IOException {
         bufferedOutputStream.write(key.getBytes());
         bufferedOutputStream.write(",".getBytes());
-        if(value == null)
-            System.out.println(key);
         bufferedOutputStream.write(value.toString().getBytes()); //------------------->>
         bufferedOutputStream.write("\n".getBytes());
     }
