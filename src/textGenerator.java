@@ -6,8 +6,8 @@ import java.util.Random;
 public class textGenerator {
 
     private static final String CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    private static final int LINE_LENGTH = 1000;  // Length of each line
-    private static final int NUM_LINES = 300000;  // Number of lines in the file
+    private static final int LINE_LENGTH = 1000;
+    private static final int NUM_LINES = 30000;
 
     public static void main(String[] args) {
         String fileName = "new.txt";

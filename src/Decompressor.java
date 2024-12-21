@@ -15,7 +15,7 @@ public class Decompressor {
         DecompressionParms decompressionParms = new DecompressionParms();
         Time begin = new Time(System.currentTimeMillis());
         try (FileInputStream fileInputStream = new FileInputStream(input);
-                                        FileChannel fileChannel = fileInputStream.getChannel()) {
+             FileChannel fileChannel = fileInputStream.getChannel()) {
             ByteBuffer buffer = ByteBuffer.allocate((int) fileChannel.size());
             fileChannel.read(buffer);
             buffer.flip();

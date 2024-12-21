@@ -9,6 +9,7 @@ public class Main {
     public static CompressedParms compressedParms;
     public static DecompressionParms decompressionParms;
     public static void main(String[] args) {
+        Compressor1 compressor1 = new Compressor1();
         Compressor compressor = new Compressor();
         Decompressor decompressor = new Decompressor();
         if(args.length < 2) {
@@ -32,7 +33,10 @@ public class Main {
         try {
             if (operator == 'c') {
                 int n = Integer.parseInt(args[2]);
-                compressedParms = compressor.compress(path, n);
+                if(n==1)
+                    compressedParms = compressor1.compress(path);
+                else
+                    compressedParms = compressor.compress(path,n);
                 System.out.println(compressedParms);
             }
             else {

@@ -73,10 +73,10 @@ class MainTest {
             System.out.println("Out of memory error." + fileName + " n = " + n);
         }
     }
-//    @Test
-//    void gbbct10_seq() throws IOException {
-//        runTest("gbbct10.seq");
-//    }
+    @Test
+    void gbbct10_seq() throws IOException {
+        runTest("gbbct10.seq");
+    }
 //    @Test
 //    void largeTestFile_txt() throws IOException {
 //        runTest("largeTestFile.txt");
@@ -101,12 +101,16 @@ class MainTest {
     void greedy_pdf() throws IOException {
         runTest("greedy.pdf");
     }
-//    @Test
-//    void parking_jpeg() throws IOException {
-//        runTest("parking.jpeg");
-//    }
+    @Test
+    void parking_jpeg() throws IOException {
+        runTest("parking.jpeg");
+    }
     @Test
     void upmovie_jpg() throws IOException {
         runTest("up-movie.jpg");
+    }
+    @Test
+    void small_txt() throws IOException {
+        runTest("small.txt");
     }
 }
