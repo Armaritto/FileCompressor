@@ -6,7 +6,25 @@ import java.sql.Time;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
-
+/**
+ File Channel
+ <br>
+ <a href="https://stackoverflow.com/questions/33601905/read-write-using-filechannel-and-fileinput-outputstream-java">
+ StackOverFlow
+ </a>
+ <a href="https://www.geeksforgeeks.org/fileinputstream-getchannel-method-in-java-with-examples/">
+ Geeks for Geeks
+ </a>
+ <a href="https://www.baeldung.com/java-filechannel">
+ Baeldung
+ </a>
+ <br><br>
+ Try with Resources
+ <br>
+ <a href="https://www.geeksforgeeks.org/try-with-resources-feature-in-java/">
+ Geeks for Geeks
+ </a>
+ */
 public class Decompressor {
     HashMap<Integer, ByteBuffer> dict = new HashMap<>();
     private int size;
