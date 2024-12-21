@@ -12,26 +12,26 @@ public class Main {
         Compressor1 compressor1 = new Compressor1();
         Compressor compressor = new Compressor();
         Decompressor decompressor = new Decompressor();
-        if(args.length < 2) {
+        if(args.length<2) {
             System.out.println("Invalid number of arguments.");
             return;
         }
         char operator = args[0].charAt(0);
-        if (operator != 'c' && operator != 'd') {
+        if (operator!='c' && operator!='d') {
             System.out.println("Invalid operator.");
             return;
         }
-        if(operator == 'c' && args.length != 3) {
+        if(operator=='c' && args.length!=3) {
             System.out.println("Invalid number of arguments.");
             return;
         }
         String path = args[1];
-        if (operator == 'c' && !args[2].matches("\\d+")) {
+        if (operator=='c' && !args[2].matches("\\d+")) {
             System.out.println("Invalid n.");
             return;
         }
         try {
-            if (operator == 'c') {
+            if(operator == 'c'){
                 int n = Integer.parseInt(args[2]);
                 if(n==1)
                     compressedParms = compressor1.compress(path);
@@ -39,7 +39,7 @@ public class Main {
                     compressedParms = compressor.compress(path,n);
                 System.out.println(compressedParms);
             }
-            else {
+            else{
                 decompressionParms = decompressor.decompress(path);
                 System.out.println(decompressionParms);
             }

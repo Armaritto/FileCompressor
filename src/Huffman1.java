@@ -7,7 +7,7 @@ public class Huffman1 {
         MinHeap1 minHeap = new MinHeap1(n);
         for(byte key : freq.keySet())
             minHeap.insert(new Node1(key, freq.get(key)));
-        for(int i=0; i<n-1; i++) {
+        for(int i=0;i<n-1;i++) {
             Node1 x = minHeap.extractMin();
             Node1 y = minHeap.extractMin();
             Node1 z = new Node1(x,y,x.freq+y.freq,true);
@@ -15,7 +15,7 @@ public class Huffman1 {
             minHeap.insert(z);
         }
         Node1 root = minHeap.extractMin();
-        createDict(root, 1); //dummy bit to make leading zeros arent lost
+        createDict(root,1); //dummy bit to make leading zeros arent lost
         return dict;
     }
     private void createDict(Node1 node, int code) {

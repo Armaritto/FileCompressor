@@ -45,7 +45,7 @@ public class Compressor {
     HashMap<ByteBuffer, Integer> freq = new HashMap<>();
     HashMap<ByteBuffer, Integer> dict = new HashMap<>();
     int padding = 0;
-    public CompressedParms compress(String path, int n) throws IOException {
+    public CompressedParms compress(String path, int n) throws IOException{
         CompressedParms compressedParms = new CompressedParms();
         Time begin = new Time(System.currentTimeMillis());
         initializeFreq(path,n);
@@ -58,7 +58,7 @@ public class Compressor {
             writeHeader(bufferedOutputStream,n);
             writeContent(bufferedOutputStream,path,n);
         }
-        catch (IOException e) {
+        catch (IOException e){
             System.out.println("Error writing the content.");
         }
 //        System.out.println("padding: "+padding);
@@ -70,19 +70,20 @@ public class Compressor {
         compressedParms.setCompressionRatio((int) (newFile.length() * 100 / oldFile.length()));
         return compressedParms;
     }
-    private void initializeFreq(String path, int n) {
+    private void initializeFreq(String path, int n){
         try (BufferedInputStream bufferedInputStream
                      = new BufferedInputStream(new FileInputStream(path))) {
             byte[] buffer = new byte[65536];
             int bytesRead;
             ByteBuffer key;
-            while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
-                for (int i=0;i<bytesRead;i+=n) {
+            while((bytesRead = bufferedInputStream.read(buffer)) != -1){
+                for(int i=0;i<bytesRead;i+=n){
                     key = ByteBuffer.wrap(Arrays.copyOfRange(buffer, i, i + Math.min(n, bytesRead - i)));
                     freq.compute(key, (k, v) -> v == null ? 1 : v + 1);
                 }
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             System.out.println("Error reading the file.");
         }
     }
@@ -90,7 +91,7 @@ public class Compressor {
         Huffman huffman = new Huffman();
         dict = huffman.encode(freq);
     }
-    private void writeHeader(BufferedOutputStream bufferedOutputStream, int n) throws IOException {
+    private void writeHeader(BufferedOutputStream bufferedOutputStream, int n) throws IOException{
 //        bufferedWriting("n", n, bufferedOutputStream);
         bufferedWriting("padding", 0, bufferedOutputStream);
         bufferedWriting("size", dict.size(), bufferedOutputStream);
@@ -99,7 +100,7 @@ public class Compressor {
             bufferedWriting(keyBase64, dict.get(key), bufferedOutputStream);
         }
     }
-    private void writeContent(BufferedOutputStream bufferedOutputStream, String oldPath, int n) throws IOException {
+    private void writeContent(BufferedOutputStream bufferedOutputStream, String oldPath, int n) throws IOException{
         try (BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(oldPath))) {
             byte[] buffer = new byte[65536];
             int bytesRead;
@@ -108,16 +109,16 @@ public class Compressor {
             int bitBuffer = 0;
             int bitCount = 0;
             int bitLength;
-            while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
-                for (int i=0;i<bytesRead;i+=n){
+            while((bytesRead = bufferedInputStream.read(buffer)) != -1){
+                for(int i=0;i<bytesRead;i+=n){
                     int length = Math.min(n, bytesRead - i);
                     key = ByteBuffer.wrap(Arrays.copyOfRange(buffer, i, i + length));
                     encodedValue = dict.get(key);
                     bitLength = Integer.SIZE - Integer.numberOfLeadingZeros(encodedValue) - 1;
-                    for (int j=bitLength-1;j>=0;j--) {
+                    for(int j=bitLength-1;j>=0;j--){
                         bitBuffer = (bitBuffer << 1) | ((encodedValue >> j) & 1);
                         bitCount++;
-                        if (bitCount == 8) {
+                        if(bitCount == 8){
                             bufferedOutputStream.write((byte) bitBuffer);
                             bitBuffer = 0;
                             bitCount = 0;
@@ -125,17 +126,17 @@ public class Compressor {
                     }
                 }
             }
-            if(bitCount > 0) {
+            if(bitCount>0){
                 padding = 8 - bitCount;
                 bitBuffer <<= (8 - bitCount);
                 bufferedOutputStream.write((byte) bitBuffer);
             }
         }
-        catch (IOException e) {
+        catch (IOException e){
             System.out.println("Error writing the content.");
         }
     }
-    private String convertPath(String path, int n) {
+    private String convertPath(String path, int n){
         int index = path.lastIndexOf('/');
         String dirPath = path.substring(0, index + 1);
         String filename = path.substring(index + 1);
@@ -145,7 +146,7 @@ public class Compressor {
         String newFilename = "21010229." + n + "." + fileName + extension + ".hc";
         return dirPath + newFilename;
     }
-    private static void bufferedWriting(String key, Integer value, BufferedOutputStream bufferedOutputStream) throws IOException {
+    private static void bufferedWriting(String key, Integer value, BufferedOutputStream bufferedOutputStream) throws IOException{
         bufferedOutputStream.write(key.getBytes());
         bufferedOutputStream.write(",".getBytes());
         bufferedOutputStream.write(value.toString().getBytes()); //------------------->>

@@ -33,19 +33,20 @@ public class Compressor1 {
         compressedParms.setCompressionRatio((int) (newFile.length() * 100 / oldFile.length()));
         return compressedParms;
     }
-    private void initializeFreq(String path) {
+    private void initializeFreq(String path){
         try (BufferedInputStream bufferedInputStream
                      = new BufferedInputStream(new FileInputStream(path))) {
             byte[] buffer = new byte[65536];
             int bytesRead;
             byte key;
-            while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
-                for (int i=0;i<bytesRead;i++) {
+            while((bytesRead = bufferedInputStream.read(buffer)) != -1) {
+                for(int i=0;i<bytesRead;i++){
                     key = buffer[i];
                     freq.compute(key, (k, v) -> v == null ? 1 : v + 1);
                 }
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e){
             System.out.println("Error reading the file.");
         }
     }
@@ -53,17 +54,17 @@ public class Compressor1 {
         Huffman1 huffman = new Huffman1();
         dict = huffman.encode(freq);
     }
-    private void writeHeader(BufferedOutputStream bufferedOutputStream) throws IOException {
+    private void writeHeader(BufferedOutputStream bufferedOutputStream) throws IOException{
         bufferedWriting("n", 1, bufferedOutputStream);
         bufferedWriting("padding", 0, bufferedOutputStream);
         bufferedWriting("size", dict.size(), bufferedOutputStream);
-        for (byte key : freq.keySet()) {
+        for(byte key : freq.keySet()){
             String keyBase64 = Base64.getEncoder().encodeToString(new byte[]{key});
             bufferedWriting(keyBase64, dict.get(key), bufferedOutputStream);
         }
     }
-    private void writeContent(BufferedOutputStream bufferedOutputStream, String oldPath) throws IOException {
-        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(oldPath))) {
+    private void writeContent(BufferedOutputStream bufferedOutputStream, String oldPath) throws IOException{
+        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(oldPath))){
             byte[] buffer = new byte[65536];
             int bytesRead;
             byte key;
@@ -71,15 +72,15 @@ public class Compressor1 {
             int bitBuffer = 0;
             int bitCount = 0;
             int bitLength;
-            while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
-                for (int i=0;i<bytesRead;i++){
+            while((bytesRead = bufferedInputStream.read(buffer)) != -1){
+                for(int i=0;i<bytesRead;i++){
                     key = buffer[i];
                     encodedValue = dict.get(key);
                     bitLength = Integer.SIZE - Integer.numberOfLeadingZeros(encodedValue) - 1;
-                    for (int j=bitLength-1;j>=0;j--) {
+                    for(int j=bitLength-1;j>=0;j--){
                         bitBuffer = (bitBuffer << 1) | ((encodedValue >> j) & 1);
                         bitCount++;
-                        if (bitCount == 8) {
+                        if(bitCount == 8){
                             bufferedOutputStream.write((byte) bitBuffer);
                             bitBuffer = 0;
                             bitCount = 0;
@@ -87,13 +88,13 @@ public class Compressor1 {
                     }
                 }
             }
-            if(bitCount > 0) {
+            if(bitCount>0){
                 padding = 8 - bitCount;
                 bitBuffer <<= (8 - bitCount);
                 bufferedOutputStream.write((byte) bitBuffer);
             }
         }
-        catch (IOException e) {
+        catch (IOException e){
             System.out.println("Error writing the content.");
         }
     }
@@ -107,7 +108,7 @@ public class Compressor1 {
         String newFilename = "21010229." + n + "." + fileName + extension + ".hc";
         return dirPath + newFilename;
     }
-    private static void bufferedWriting(String key, Integer value, BufferedOutputStream bufferedOutputStream) throws IOException {
+    private static void bufferedWriting(String key, Integer value, BufferedOutputStream bufferedOutputStream) throws IOException{
         bufferedOutputStream.write(key.getBytes());
         bufferedOutputStream.write(",".getBytes());
         bufferedOutputStream.write(value.toString().getBytes()); //------------------->>

@@ -14,12 +14,12 @@ public class CompressedParms {
         this.compressionTime = compressionTime;
     }
     private String formatTime(int timeInMs) {
-        if (timeInMs >= 1000) {
+        if(timeInMs>=1000) {
             int timeInSeconds = timeInMs / 1000;
             return timeInSeconds + " s";
-        } else {
-            return timeInMs + " ms";
         }
+        else
+            return timeInMs + " ms";
     }
     @Override
     public String toString() {
